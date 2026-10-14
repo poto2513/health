@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>나의 건강 습관 체크표</title>
+  <style>
+    :root {
+      --green: #287a55;
+      --green-dark: #1e6042;
+      --green-light: #eaf6ef;
+      --ink: #20312a;
+      --muted: #5b6b63;
+      --line: #d8e5dc;
+      --paper: #ffffff;
+      --bg: #f3f8f4;
+      --orange: #f4a340;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      font-size: 19px;
+      line-height: 1.55;
+    }
+    .wrap { width: min(780px, 100%); margin: 0 auto; padding: 22px 16px 40px; }
+    header {
+      background: linear-gradient(135deg, #287a55, #4a9b70);
+      color: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 8px 24px #1e60421a;
+    }
+    .eyebrow { font-size: 16px; font-weight: 700; opacity: .95; letter-spacing: .04em; }
+    h1 { margin: 6px 0 8px; font-size: clamp(29px, 6vw, 38px); line-height: 1.25; }
+    header p { margin: 0; font-size: 18px; }
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      margin-top: 18px;
+      box-shadow: 0 4px 16px #183e2810;
+    }
+    .date-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    label, .section-title { font-size: 21px; font-weight: 800; }
+    input[type="date"] {
+      font: inherit; font-size: 19px; color: var(--ink);
+      border: 2px solid #b8cfc0; border-radius: 12px; padding: 10px 12px;
+      min-height: 52px; background: white;
+    }
+    .hint { color: var(--muted); font-size: 16px; margin: 10px 0 0; }
+    .habits { display: grid; gap: 12px; margin-top: 16px; }
+    .habit {
+      display: flex; align-items: center; gap: 16px;
+      min-height: 84px; padding: 16px 18px;
+      border: 2px solid var(--line); border-radius: 16px;
+      background: #fff; cursor: pointer; transition: background .15s, border-color .15s;
+    }
+    .habit:has(input:checked) { background: var(--green-light); border-color: var(--green); }
+    .habit input {
+      width: 30px; height: 30px; flex: 0 0 30px;
+      accent-color: var(--green); cursor: pointer;
+    }
+    .habit-text { display: flex; flex-direction: column; }
+    .habit-name { font-size: 22px; font-weight: 800; }
+    .habit-desc { font-size: 16px; color: var(--muted); }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+    .stat {
+      padding: 18px; border-radius: 16px; background: var(--green-light);
+      text-align: center; border: 1px solid #cde6d5;
+    }
+    .stat-label { font-size: 17px; color: var(--green-dark); font-weight: 700; }
+    .stat-value { font-size: clamp(30px, 7vw, 40px); font-weight: 900; color: var(--green-dark); line-height: 1.3; }
+    .progress-track { width: 100%; height: 18px; background: #e5ece7; border-radius: 99px; overflow: hidden; margin-top: 16px; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2d875d, #75bd8d); border-radius: 99px; transition: width .2s ease; }
+    .message { margin: 12px 0 0; font-size: 18px; font-weight: 700; color: var(--green-dark); text-align: center; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    button {
+      min-height: 54px; padding: 12px 18px; border-radius: 13px;
+      font: inherit; font-size: 18px; font-weight: 800; cursor: pointer;
+      border: 2px solid transparent;
+    }
+    button:focus-visible, input:focus-visible, .habit:focus-within { outline: 3px solid var(--orange); outline-offset: 3px; }
+    .btn-main { background: var(--green); color: white; flex: 1; }
+    .btn-main:hover { background: var(--green-dark); }
+    .btn-light { background: white; border-color: #b8cfc0; color: var(--green-dark); }
+    .btn-reset { background: #fff5f2; border-color: #e9c7bc; color: #963e2a; }
+    .history-list { display: grid; gap: 8px; margin-top: 14px; }
+    .history-item {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px;
+      background: #fff; font-size: 17px;
+    }
+    .history-item button { min-height: 42px; padding: 7px 12px; font-size: 16px; }
+    .empty { color: var(--muted); font-size: 17px; padding: 12px 0; }
+    footer { text-align: center; color: var(--muted); font-size: 15px; margin: 20px 6px 0; }
+    @media (max-width: 480px) {
+      body { font-size: 18px; }
+      .wrap { padding: 12px 12px 28px; }
+      header { padding: 23px 19px; border-radius: 19px; }
+      .panel { padding: 17px; border-radius: 17px; }
+      .habit { min-height: 80px; padding: 13px; gap: 12px; }
+      .habit-name { font-size: 20px; }
+      .habit-desc { font-size: 15px; }
+      .date-row { align-items: flex-start; flex-direction: column; }
+      input[type="date"] { width: 100%; }
+      .stats { gap: 9px; }
+      .stat { padding: 14px 8px; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">매일 조금씩, 건강하게</div>
+      <h1>🌿 나의 건강 습관 체크표</h1>
+      <p>오늘의 작은 실천이 건강한 내일을 만듭니다.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="date-title">
+      <div class="date-row">
+        <label id="date-title" for="selectedDate">📅 기록할 날짜</label>
+        <input id="selectedDate" type="date" aria-label="기록할 날짜 선택">
+      </div>
+      <p class="hint">날짜를 바꾸면 해당 날짜에 저장한 기록을 확인할 수 있어요.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="habits-title">
+      <div class="section-title" id="habits-title">오늘의 건강 습관 5가지</div>
+      <div class="habits">
+        <label class="habit">
+          <input type="checkbox" data-habit="walk">
+          <span class="habit-text"><span class="habit-name">🚶 걷기</span><span class="habit-desc">가볍게 산책하거나 몸을 움직였어요.</span></span>
+        </label>
+        <label class="habit">
+          <input type="checkbox" data-habit="water">
+          <span class="habit-text"><span class="habit-name">💧 물 마시기</span><span class="habit-desc">하루 동안 물을 나누어 마셨어요.</span></span>
+        </label>
+        <label class="habit">
+          <input type="checkbox" data-habit="meal">
+          <span class="habit-text"><span class="habit-name">🍚 규칙적인 식사</span><span class="habit-desc">끼니를 거르지 않고 규칙적으로 먹었어요.</span></span>
+        </label>
+        <label class="habit">
+          <input type="checkbox" data-habit="sleep">
+          <span class="habit-text"><span class="habit-name">😴 충분한 수면</span><span class="habit-desc">몸이 쉴 수 있도록 충분히 잠을 잤어요.</span></span>
+        </label>
+        <label class="habit">
+          <input type="checkbox" data-habit="stretch">
+          <span class="habit-text"><span class="habit-name">🙆 스트레칭</span><span class="habit-desc">목, 어깨, 허리 등을 무리 없이 풀어줬어요.</span></span>
+        </label>
+      </div>
+
+      <div class="stats" aria-live="polite">
+        <div class="stat">
+          <div class="stat-label">실천한 항목</div>
+          <div class="stat-value"><span id="completed">0</span><span style="font-size:23px"> / 5</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">오늘의 달성률</div>
+          <div class="stat-value" id="percent">0%</div>
+        </div>
+      </div>
+      <div class="progress-track" role="progressbar" aria-label="오늘의 달성률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="message" id="message">첫 번째 습관부터 천천히 실천해 봐요!</p>
+
+      <div class="actions">
+        <button class="btn-main" id="saveBtn" type="button">✓ 오늘 기록 저장하기</button>
+        <button class="btn-reset" id="resetBtn" type="button">↻ 선택한 날짜 초기화</button>
+      </div>
+      <p class="hint" id="saveStatus" role="status">체크할 때마다 이 브라우저에 자동 저장됩니다.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="history-title">
+      <div class="section-title" id="history-title">🗓️ 날짜별 기록</div>
+      <p class="hint">저장된 날짜를 눌러 기록을 다시 확인할 수 있어요.</p>
+      <div class="history-list" id="historyList"></div>
+    </section>
+
+    <footer>기록은 현재 브라우저에 저장됩니다. 브라우저 데이터 삭제 또는 다른 기기에서는 기록이 보이지 않을 수 있어요.</footer>
+  </main>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = "myHealthyHabitsRecords_v1";
+      const selectedDate = document.getElementById("selectedDate");
+      const checks = [...document.querySelectorAll("[data-habit]")];
+      const completedEl = document.getElementById("completed");
+      const percentEl = document.getElementById("percent");
+      const progressFill = document.getElementById("progressFill");
+      const progressTrack = document.getElementById("progressTrack");
+      const messageEl = document.getElementById("message");
+      const saveStatus = document.getElementById("saveStatus");
+      const historyList = document.getElementById("historyList");
+      const resetBtn = document.getElementById("resetBtn");
+      const saveBtn = document.getElementById("saveBtn");
+
+      function localDateString(date = new Date()) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+
+      function readRecords() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+        } catch {
+          return {};
+        }
+      }
+
+      function writeRecords(records) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+          return true;
+        } catch {
+          saveStatus.textContent = "저장하지 못했어요. 브라우저의 저장 공간 설정을 확인해 주세요.";
+          return false;
+        }
+      }
+
+      function currentValues() {
+        return Object.fromEntries(checks.map(box => [box.dataset.habit, box.checked]));
+      }
+
+      function renderValues(values = {}) {
+        checks.forEach(box => { box.checked = Boolean(values[box.dataset.habit]); });
+        updateStats();
+      }
+
+      function updateStats() {
+        const count = checks.filter(box => box.checked).length;
+        const percent = Math.round(count / checks.length * 100);
+        completedEl.textContent = count;
+        percentEl.textContent = `${percent}%`;
+        progressFill.style.width = `${percent}%`;
+        progressTrack.setAttribute("aria-valuenow", String(percent));
+
+        if (count === 0) messageEl.textContent = "첫 번째 습관부터 천천히 실천해 봐요!";
+        else if (count < 3) messageEl.textContent = "좋은 시작이에요! 하나씩 더 실천해 봐요. 🌱";
+        else if (count < 5) messageEl.textContent = "아주 잘하고 있어요! 조금만 더 힘내요. 💚";
+        else messageEl.textContent = "완벽해요! 오늘도 건강한 하루를 만들었어요! 🎉";
+      }
+
+      function saveCurrent(showMessage = true) {
+        const records = readRecords();
+        records[selectedDate.value] = currentValues();
+        const ok = writeRecords(records);
+        if (ok) {
+          if (showMessage) saveStatus.textContent = `${selectedDate.value} 기록을 저장했어요.`;
+          renderHistory();
+        }
+      }
+
+      function loadDate() {
+        const records = readRecords();
+        renderValues(records[selectedDate.value] || {});
+        saveStatus.textContent = records[selectedDate.value]
+          ? `${selectedDate.value}에 저장된 기록입니다.`
+          : "이 날짜에는 기록이 없어요. 체크하면 자동으로 저장됩니다.";
+      }
+
+      function renderHistory() {
+        const records = readRecords();
+        const dates = Object.keys(records).filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date)).sort((a, b) => b.localeCompare(a));
+        historyList.replaceChildren();
+        if (dates.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "아직 저장된 기록이 없어요. 오늘부터 시작해 보세요!";
+          historyList.appendChild(empty);
+          return;
+        }
+
+        dates.forEach(date => {
+          const values = records[date] || {};
+          const count = checks.filter(box => Boolean(values[box.dataset.habit])).length;
+          const item = document.createElement("div");
+          item.className = "history-item";
+
+          const summary = document.createElement("div");
+          const dateText = document.createElement("strong");
+          dateText.textContent = date;
+          const result = document.createElement("div");
+          result.textContent = `${count}/5개 실천 · ${Math.round(count / checks.length * 100)}%`;
+          summary.append(dateText, result);
+
+          const openBtn = document.createElement("button");
+          openBtn.className = "btn-light";
+          openBtn.type = "button";
+          openBtn.textContent = date === selectedDate.value ? "선택됨" : "기록 보기";
+          openBtn.setAttribute("aria-label", `${date} 기록 보기`);
+          openBtn.disabled = date === selectedDate.value;
+          openBtn.addEventListener("click", () => {
+            selectedDate.value = date;
+            loadDate();
+            renderHistory();
+            selectedDate.focus();
+          });
+
+          item.append(summary, openBtn);
+          historyList.appendChild(item);
+        });
+      }
+
+      checks.forEach(box => box.addEventListener("change", () => {
+        updateStats();
+        saveCurrent(false);
+        saveStatus.textContent = `${selectedDate.value} 기록이 자동 저장되었어요.`;
+      }));
+
+      selectedDate.addEventListener("change", () => {
+        if (!selectedDate.value) selectedDate.value = localDateString();
+        loadDate();
+        renderHistory();
+      });
+
+      saveBtn.addEventListener("click", () => saveCurrent(true));
+
+      resetBtn.addEventListener("click", () => {
+        const date = selectedDate.value;
+        if (!confirm(`${date}의 건강 습관 기록을 초기화할까요?`)) return;
+        const records = readRecords();
+        delete records[date];
+        const ok = writeRecords(records);
+        renderValues({});
+        if (ok) {
+          saveStatus.textContent = `${date} 기록을 초기화했어요.`;
+          renderHistory();
+        }
+      });
+
+      selectedDate.value = localDateString();
+      loadDate();
+      renderHistory();
+    })();
+  </script>
+</body>
+</html>
